@@ -12,6 +12,11 @@ raw = requests.get(ruleConfigDBPath + ruleConfig.getKey()).content.decode('utf-8
 ruleConfig.setRaw(raw)
 ruleConfig.toJSON()
 
-print(ruleConfig.getResultGroups())
+print(ruleConfig.getJSON())
 
-print(ruleConfig.getResult(4))
+print(ruleConfig.getExitConditions())
+
+print(ruleConfig.getResult(2))
+
+print(ruleConfig.getResultReason(".02"))
+print(ruleConfig.getResultReason(".x00"))

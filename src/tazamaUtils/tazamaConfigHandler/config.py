@@ -12,6 +12,7 @@ class config:
     KEYCASED = "cases"
     KEYCONFIG = "config"
     KEYPARAMETERS = "parameters"
+    EXITCONDITIONS = "exitConditions"
 
     # Attributes
     raw = ""
@@ -32,6 +33,9 @@ class config:
     def getRaw(self):
         return self.raw
 
+    def getJSON(self):
+        return self.JSON
+
     @dispatch()
     def toJSON(self):
         self.JSON = json.loads(self.raw)
@@ -39,9 +43,6 @@ class config:
     @dispatch(str)
     def toJSON(self, jsonText):
         self.JSON = json.loads(jsonText)
-
-    def getResults(self):
-        pass
 
     # Fetch
 
@@ -81,6 +82,13 @@ class ruleConfig(config):
             return (print("ERROR: No result groups found"))
         
 
+    def getExitConditions(self):
+        if self.EXITCONDITIONS in self.JSON[self.KEYCONFIG]:
+            return (self.JSON[self.KEYCONFIG][self.EXITCONDITIONS])
+        else:
+            return (print("ERROR: No exit conditions found"))
+
+
     def getParameters(self):
         try:
             return (self.JSON[self.KEYCONFIG][self.KEYPARAMETERS].items())
@@ -90,14 +98,45 @@ class ruleConfig(config):
 
     def getResult(self, value):
         resultGroups = self.getResultGroups()
-        for result in resultGroups:
-            if "upperLimit" in result and "lowerLimit" in result:
-                if value >= result["lowerLimit"] and value < result["upperLimit"]:
+
+        if self.isBanded() == True:
+            if not isinstance(value, int) and not isinstance(value, float):
+                return print("value is not a number")
+            for result in resultGroups:
+                if "upperLimit" in result and "lowerLimit" in result:
+                    if value >= result["lowerLimit"] and value < result["upperLimit"]:
+                        return result["subRuleRef"]
+                elif "upperLimit" in result :
+                    if value < result["upperLimit"]:
+                        return result["subRuleRef"]
+                elif "lowerLimit" in result :
+                    if value >= result["lowerLimit"]:
+                        return result["subRuleRef"]
+            return print("Unable to determine rule result")
+        elif self.isCased() == True:
+            for result in resultGroups:
+                if "value" in result:
+                    if value == result["value"]:
+                            return result["subRuleRef"]
+            for result in resultGroups:
+                if not "value" in result:
                     return result["subRuleRef"]
-            elif "upperLimit" in result :
-                if value < result["upperLimit"]:
-                    return result["subRuleRef"]
-            elif "lowerLimit" in result :
-                if value >= result["lowerLimit"]:
-                    return result["subRuleRef"]
+
         return print("Unable to determine rule result")
+
+
+    def getResultReason(self, subRuleRef):
+
+        # Check exit conditions
+        exitConditions = self.getExitConditions()
+        for result in exitConditions:
+            if subRuleRef == result["subRuleRef"]:
+                return result["reason"]
+
+        # Check result bands
+        resultGroups = self.getResultGroups()
+        for result in resultGroups:
+            if subRuleRef == result["subRuleRef"]:
+                return result["reason"]
+
+        return print("Unable to determine rule result reason")
