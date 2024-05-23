@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 FROM jupyter/minimal-notebook
 
 ARG ODBC_VER=18
