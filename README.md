@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 <div align="center">
     <h1>Jupyter Notebook</h1>
     <img alt="GitHub" src="https://img.shields.io/github/license/frmscoe/Jupyter">
